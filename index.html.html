@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Weekly Stability Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #f472b6;
+    --pink-light: #fce7f3;
+    --pink-mid: #fbcfe8;
+    --purple: #a855f7;
+    --purple-light: #f3e8ff;
+    --purple-mid: #e9d5ff;
+    --lavender: #c4b5fd;
+    --rose: #fb7185;
+    --bg: #fdf4ff;
+    --card: #ffffff;
+    --text: #3b1f4e;
+    --text-muted: #9475a8;
+    --border: #e9d5ff;
+    --shadow: rgba(168, 85, 247, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -120px; right: -120px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #f9a8d4 0%, transparent 70%);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -100px;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, #c4b5fd 0%, transparent 70%);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    background: linear-gradient(135deg, #9333ea 0%, #db2777 100%);
+    color: white;
+    text-align: center;
+    padding: 28px 16px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '✦';
+    position: absolute; top: 10px; left: 24px;
+    font-size: 20px; opacity: 0.4;
+  }
+  header::after {
+    content: 'girl math = done list';
+    position: absolute; bottom: 10px; right: 20px;
+    font-size: 11px; opacity: 0.3; font-style: italic;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  header p {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-top: 5px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: auto;
+    padding: 20px 14px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .day-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .day-tab {
+    flex-shrink: 0;
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    background: white;
+    color: var(--text-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .day-tab:hover { border-color: var(--pink); color: var(--pink); }
+  .day-tab.active {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(168,85,247,0.35);
+  }
+
+  details {
+    background: var(--card);
+    border-radius: 18px;
+    margin-bottom: 14px;
+    padding: 0;
+    box-shadow: 0 4px 20px var(--shadow);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
+    display: none;
+  }
+  details.visible { display: block; }
+  details[open] > summary .chevron { transform: rotate(180deg); }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, var(--purple-light) 0%, var(--pink-light) 100%);
+    list-style: none;
+    user-select: none;
+    color: var(--text);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .day-label { display: flex; align-items: center; gap: 10px; }
+  summary .day-emoji { font-size: 20px; }
+  summary .chevron {
+    width: 20px; height: 20px;
+    transition: transform 0.25s;
+    color: var(--purple);
+  }
+
+  .progress-wrap {
+    padding: 10px 18px 0;
+    background: linear-gradient(135deg, var(--purple-light), var(--pink-light));
+  }
+  .progress-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: rgba(168,85,247,0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--purple), var(--pink), var(--rose));
+    border-radius: 8px;
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .section { padding: 16px 18px 20px; }
+
+  h4 {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--purple);
+    margin: 18px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  h4::before {
+    content: '';
+    display: inline-block;
+    width: 4px; height: 14px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, var(--purple), var(--pink));
+    flex-shrink: 0;
+  }
+  h4:first-child { margin-top: 0; }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 7px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+    border: 2px solid var(--lavender);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: white;
+  }
+  input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    border-color: transparent;
+  }
+  input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 9px 12px;
+    margin-top: 5px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    font-size: 13.5px;
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    background: var(--purple-light);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    outline: none;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.15);
+    background: white;
+  }
+  textarea { min-height: 62px; resize: vertical; }
+  ::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+  .input-group { margin-top: 4px; margin-left: 30px; }
+
+  .weekly {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 18px;
+    margin-top: 24px;
+    box-shadow: 0 4px 20px var(--shadow);
+    border: 1.5px solid var(--border);
+  }
+  .weekly-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .reset-btn {
+    margin-top: 20px;
+    padding: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f43f5e, #ec4899);
+    color: white;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(244,63,94,0.3);
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .reset-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .reset-btn:active { transform: translateY(0); }
+
+  .reminder {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .reminder span {
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Weekly Stability &amp; Work Tracker</h1>
+  <p>✦ Consistency builds confidence ✦</p>
+</header>
+
+<div class="container">
+
+  <div class="day-tabs" id="dayTabs"></div>
+  <div id="days"></div>
+
+  <div class="weekly">
+    <div class="weekly-title">🌸 Weekly Tasks &amp; Review</div>
+
+    <h4>Household Tasks (Choose 2–3)</h4>
+    <label><input type="checkbox" id="wk_bathroom"> Bathroom clean</label>
+    <label><input type="checkbox" id="wk_floors"> Floors (vacuum / sweep / mop)</label>
+    <label><input type="checkbox" id="wk_misc"> Miscellaneous task</label>
+    <div class="input-group">
+      <input type="text" id="wk_misc_notes" placeholder="What miscellaneous task?">
+    </div>
+    <textarea id="wk_home_feel" placeholder="What made this week easier at home?" style="margin-top:8px"></textarea>
+
+    <h4>Weekly Review</h4>
+    <textarea id="weekly_well" placeholder="What went well this week?"></textarea>
+    <textarea id="weekly_challenging" placeholder="What was challenging?" style="margin-top:8px"></textarea>
+    <input type="text" id="weekly_adjustment" placeholder="One small adjustment for next week" style="margin-top:8px">
+
+    <button class="reset-btn" onclick="resetWeek()">🗑️ Reset Week</button>
+  </div>
+
+  <div class="reminder"><span>Small completed actions matter more than perfection. 💜</span></div>
+
+</div>
+
+<script>
+const days = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
+const emojis = ["🌷","✨","💜","🌸","🦋"];
+
+function getData() { return JSON.parse(localStorage.getItem("tracker")) || {}; }
+function saveData(d) { localStorage.setItem("tracker", JSON.stringify(d)); }
+
+function getMondayKey(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff)).toISOString().split('T')[0];
+}
+
+function autoWeeklyReset() {
+  const cur = getMondayKey();
+  if (localStorage.getItem("weekKey") !== cur) {
+    localStorage.removeItem("tracker");
+    localStorage.setItem("weekKey", cur);
+  }
+}
+
+function updateProgress(day) {
+  const cbs = document.querySelectorAll(`[data-day='${day}'] input[type='checkbox']`);
+  let checked = 0;
+  cbs.forEach(cb => { if (cb.checked) checked++; });
+  const pct = cbs.length ? (checked / cbs.length) * 100 : 0;
+  const bar = document.getElementById(`progress-${day}`);
+  if (bar) bar.style.width = pct + "%";
+  const lbl = document.getElementById(`progress-label-${day}`);
+  if (lbl) lbl.textContent = Math.round(pct) + "% complete";
+}
+
+function bindAutoSave(day) {
+  document.querySelectorAll(`[data-day='${day}'] input, [data-day='${day}'] textarea`).forEach(el => {
+    el.addEventListener("input", () => {
+      const data = getData();
+      if (!data[day]) data[day] = {};
+      data[day][el.name] = el.type === "checkbox" ? el.checked : el.value;
+      saveData(data);
+      updateProgress(day);
+    });
+  });
+}
+
+function loadDay(day) {
+  const dayData = (getData()[day]) || {};
+  document.querySelectorAll(`[data-day='${day}'] input, [data-day='${day}'] textarea`).forEach(el => {
+    if (dayData[el.name] !== undefined)
+      el.type === "checkbox" ? (el.checked = dayData[el.name]) : (el.value = dayData[el.name]);
+  });
+  updateProgress(day);
+}
+
+function bindWeeklySave() {
+  ["wk_bathroom","wk_floors","wk_misc","wk_misc_notes","wk_home_feel","weekly_well","weekly_challenging","weekly_adjustment"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      const data = getData();
+      if (!data._weekly) data._weekly = {};
+      data._weekly[id] = el.type === "checkbox" ? el.checked : el.value;
+      saveData(data);
+    });
+  });
+}
+
+function loadWeekly() {
+  const w = (getData()._weekly) || {};
+  ["wk_bathroom","wk_floors","wk_misc","wk_misc_notes","wk_home_feel","weekly_well","weekly_challenging","weekly_adjustment"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && w[id] !== undefined)
+      el.type === "checkbox" ? (el.checked = w[id]) : (el.value = w[id]);
+  });
+}
+
+function showDay(day) {
+  days.forEach(d => {
+    document.querySelectorAll(`details[data-day='${d}']`).forEach(el => el.classList.remove('visible'));
+    const tab = document.getElementById(`tab-${d}`);
+    if (tab) tab.classList.remove('active');
+  });
+  document.querySelectorAll(`details[data-day='${day}']`).forEach(el => el.classList.add('visible'));
+  const activeTab = document.getElementById(`tab-${day}`);
+  if (activeTab) activeTab.classList.add('active');
+}
+
+function createDay(day, i) {
+  return `
+  <details open data-day="${day}" class="${i === 0 ? 'visible' : ''}">
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label-${day}">0% complete</div>
+      <div class="progress-bar"><div class="progress" id="progress-${day}"></div></div>
+    </div>
+    <summary>
+      <span class="day-label"><span class="day-emoji">${emojis[i]}</span>${day}</span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <div class="section">
+
+      <h4>Daily Workday Check-In</h4>
+      <label><input type="checkbox" name="on_time"> On time / early start</label>
+      <label>Priority 1</label>
+      <input type="text" name="p1" placeholder="First priority...">
+      <label style="margin-top:6px">Priority 2</label>
+      <input type="text" name="p2" placeholder="Second priority...">
+      <label style="margin-top:6px">Priority 3</label>
+      <input type="text" name="p3" placeholder="Third priority...">
+      <textarea name="success_day" placeholder="What does a successful workday look like today?" style="margin-top:8px"></textarea>
+
+      <h4>Work Requirements</h4>
+      <label><input type="checkbox" name="calls"> Complete 6 sales calls</label>
+      <div class="input-group"><input type="text" name="calls_notes" placeholder="Call notes (optional)"></div>
+      <label><input type="checkbox" name="issue"> Solve 1 issue</label>
+      <div class="input-group"><input type="text" name="issue_notes" placeholder="What was solved?"></div>
+      <label><input type="checkbox" name="win"> Complete 1 visible win task</label>
+      <div class="input-group"><input type="text" name="win_notes" placeholder="What was completed?"></div>
+      <label><input type="checkbox" name="org"> Stay organized (notes/logs updated)</label>
+      <textarea name="proud" placeholder="What progress am I most proud of today?" style="margin-top:8px"></textarea>
+
+      <h4>End of Day Reset</h4>
+      <label><input type="checkbox" name="tomorrow_cb"> Write tomorrow's first task</label>
+      <div class="input-group"><input type="text" name="tomorrow_task" placeholder="Tomorrow's first task"></div>
+      <textarea name="finish" placeholder="What did I finish today that moved things forward?" style="margin-top:8px"></textarea>
+
+      <h4>Household Maintenance</h4>
+      <label><input type="checkbox" name="kitchen"> Kitchen tidy</label>
+      <label><input type="checkbox" name="laundry"> Laundry step (start, fold, or put away)</label>
+      <label><input type="checkbox" name="tidy"> Quick tidy (surfaces / clutter reset)</label>
+      <textarea name="home_feel" placeholder="What space feels better after today's reset? (optional)" style="margin-top:8px"></textarea>
+
+      <h4>Confidence Tracker</h4>
+      <input type="text" name="done1" placeholder="1 thing I completed today">
+      <input type="text" name="done2" placeholder="1 thing I handled even without feeling like it" style="margin-top:6px">
+      <textarea name="proof" placeholder="What does today prove about me?" style="margin-top:6px"></textarea>
+
+      <h4>Reading &amp; Growth</h4>
+      <label><input type="checkbox" name="fiction"> Fiction reading</label>
+      <div class="input-group"><input type="text" name="fiction_notes" placeholder="Time or pages"></div>
+      <label><input type="checkbox" name="nonfiction"> Nonfiction reading</label>
+      <div class="input-group"><input type="text" name="nonfiction_notes" placeholder="Time or pages"></div>
+      <textarea name="learning" placeholder="What did I learn or enjoy today? (optional)" style="margin-top:8px"></textarea>
+
+    </div>
+  </details>`;
+}
+
+function resetWeek() {
+  if (confirm("Are you sure you want to reset the entire week?")) {
+    localStorage.removeItem("tracker");
+    location.reload();
+  }
+}
+
+const tabsEl = document.getElementById("dayTabs");
+days.forEach((day, i) => {
+  const btn = document.createElement("button");
+  btn.className = "day-tab" + (i === 0 ? " active" : "");
+  btn.id = `tab-${day}`;
+  btn.textContent = `${emojis[i]} ${day}`;
+  btn.onclick = () => showDay(day);
+  tabsEl.appendChild(btn);
+});
+
+document.getElementById("days").innerHTML = days.map((d, i) => createDay(d, i)).join("");
+
+autoWeeklyReset();
+
+days.forEach(day => {
+  bindAutoSave(day);
+  loadDay(day);
+});
+
+bindWeeklySave();
+loadWeekly();
+</script>
+</body>
+</html>
